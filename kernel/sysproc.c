@@ -5,6 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
 
 uint64
 sys_exit(void)
@@ -100,4 +101,23 @@ sys_trace(void)
     return -1;
   myproc()->tracemask = n;
   return 0;
+}
+
+uint64 sys_info(void) {
+  struct sysinfo info;
+  uint64 addr;
+  info.freemem = kfreemem();
+  // printf("sys_info freemem %d\n", info.freemem);
+  info.nproc = proc_num();
+  // printf("sys_info nproc %d\n", info.nproc);
+  if(argaddr(0, &addr), addr < 0) {
+    return -1;
+  }
+  // copy info(kernel space) to addr(user space)
+  if (copyout(myproc()->pagetable, addr, (char *)&info, sizeof(info)) < 0) {
+    return -1;
+  } else {
+    return 0;
+  }
+
 }
