@@ -103,7 +103,7 @@ sys_trace(void)
   return 0;
 }
 
-uint64 sys_info(void) {
+int sys_info(void) {
   struct sysinfo info;
   uint64 addr;
   info.freemem = kfreemem();
