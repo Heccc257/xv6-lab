@@ -8,10 +8,12 @@ int g(int x) {
 }
 
 int f(int x) {
+  printf("function f\n");
   return g(x);
 }
 
 void main(void) {
   printf("%d %d\n", f(8)+1, 13);
+  // printf("x=%d y=%d", 3);
   exit(0);
 }
