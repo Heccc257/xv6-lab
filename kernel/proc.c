@@ -125,12 +125,28 @@ found:
   p->pid = allocpid();
   p->state = USED;
 
+
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
     release(&p->lock);
     return 0;
   }
+
+  // alarm
+  if ((p->alarm_trapframe = (struct trapframe *)kalloc()) == 0) {
+    freeproc(p);
+    release(&p->lock);
+    return 0;
+  }
+
+  p->alarmticks = 0;
+  p->alarminterval = 0;
+  p->alarm_handler = 0;
+  p->accessable = 1;
+
+  // alarm
+
 
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
@@ -157,6 +173,12 @@ freeproc(struct proc *p)
 {
   if(p->trapframe)
     kfree((void*)p->trapframe);
+  
+  if (p->alarm_trapframe)
+    kfree((void*)p->alarm_trapframe);
+  p->alarm_trapframe = 0;
+  p->accessable = 0;
+
   p->trapframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);

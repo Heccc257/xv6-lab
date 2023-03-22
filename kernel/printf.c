@@ -141,7 +141,8 @@ backtrace() {
   // struct proc *p = myproc();
   uint64 fp = r_fp();
   while (1) {
-    printf("%p\n", fp);
+    uint64 ra = *(uint64*)((void*)(fp - 8));
+    printf("%p\n", ra);
     uint64 nxt_fp = *(uint64*)((void*)(fp - 16));
     // printf("next = %p\n", nxt_fp);
     if (PGROUNDDOWN(nxt_fp) != PGROUNDDOWN(fp)) break;
@@ -150,3 +151,16 @@ backtrace() {
   }
 
 }
+
+// void
+// backtrace(void)
+// {
+//   uint64 fp, ra;
+//   fp = r_fp();
+//   uint64 bottom = PGROUNDDOWN(fp), top = PGROUNDUP(fp);
+//   while (bottom <= fp && fp < top) {
+//     ra = *(uint64*)(fp - 8);
+//     printf("%p\n", ra);
+//     fp = *(uint64*)(fp - 16);
+//   }
+// }
