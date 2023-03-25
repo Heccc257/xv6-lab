@@ -23,14 +23,37 @@ barrier_init(void)
 }
 
 static void 
-barrier()
+barrier(int token)
 {
   // YOUR CODE HERE
   //
   // Block until all threads have called barrier() and
   // then increment bstate.round.
   //
+
+  static int access_here=0;
+  pthread_mutex_lock(&bstate.barrier_mutex);
+  access_here ++ ;
+  if (access_here < nthread) pthread_cond_wait(&bstate.barrier_cond, &bstate.barrier_mutex);
+  else {
+    access_here = 0;
+    pthread_cond_broadcast(&bstate.barrier_cond);
+  }
+  pthread_mutex_unlock(&bstate.barrier_mutex);
+
+
+  pthread_mutex_lock(&bstate.barrier_mutex);
+  bstate.nthread ++ ;
+  if (nthread == bstate.nthread) {
+    bstate.round ++ ;
+    pthread_cond_broadcast(&bstate.barrier_cond);
+  } else {
+    pthread_cond_wait(&bstate.barrier_cond, &bstate.barrier_mutex);
+  }
+
+  bstate.nthread -- ;
   
+  pthread_mutex_unlock(&bstate.barrier_mutex);
 }
 
 static void *
@@ -43,7 +66,7 @@ thread(void *xa)
   for (i = 0; i < 20000; i++) {
     int t = bstate.round;
     assert (i == t);
-    barrier();
+    barrier(random()%100);
     usleep(random() % 100);
   }
 
